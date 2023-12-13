@@ -1,6 +1,8 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // maxX and maxY are the maximum allowed coordinates
 const (
@@ -16,6 +18,7 @@ type Item struct {
 type Player struct {
 	Name string
 	Item
+	Keys []Key // slice of Key
 }
 
 func (i Item) String() string {
@@ -84,6 +87,18 @@ func main() {
 
 	b := NewNumber[int]("")
 	fmt.Println(b)
+
+	k := Jade
+	fmt.Println(k)
+	fmt.Println(Key(17))
+
+	// time.Time import json.Marshaler interface
+	// json.NewEncoder(os.Stdout).Encode(time.Now())
+
+	p1.FoundKey(Jade)
+	fmt.Println(p1.Keys)
+	p1.FoundKey(Key(17))
+	fmt.Println(p1.Keys)
 }
 
 type mover interface {
@@ -101,4 +116,66 @@ func NewNumber[T int | float64](kind string) T {
 		return 0
 	}
 	return 0.0
+}
+
+type Key byte
+
+// Go's version of enums
+const (
+	Jade Key = iota + 1
+	Copper
+	Crystal
+	invalidKey // internal - not exported
+)
+
+func (k Key) String() string {
+	switch k {
+	case Jade:
+		return "Jade"
+	case Copper:
+		return "Copper"
+	case Crystal:
+		return "Crystal"
+		// default:
+		// 	return "Unknown"
+	}
+	return fmt.Sprintf("<Key %d>", k)
+}
+
+/* Exercise
+- Add a "Keys" field to the Player struct which is a slice of Key
+- Add a "FoundKey (k Key) error" method to Player which add ke to key if it's not already there
+- Err if k is not one of the known keys
+*/
+
+func (p *Player) FoundKey(k Key) error {
+	if k < Jade || k >= invalidKey {
+		return fmt.Errorf("Unknown key %d", k)
+	}
+	for _, v := range p.Keys {
+		if v == k {
+			return nil
+		}
+	}
+	p.Keys = append(p.Keys, k)
+	return nil
+	// if k < Jade || k >= invalidKey {
+	// 	return fmt.Errorf("invalid key: %#v", k)
+	// }
+
+	// // if !containsKey(p.Keys, k) {
+	// if !slices.Contains(p.Keys, k) {// slices.Contains is a generic function -- golang.org/x/exp/slices
+	// 	p.Keys = append(p.Keys, k)
+	// }
+
+	// return nil
+}
+
+func containsKey(keys []Key, k Key) bool {
+	for _, k2 := range keys {
+		if k2 == k {
+			return true
+		}
+	}
+	return false
 }
