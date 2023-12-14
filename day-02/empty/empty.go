@@ -66,7 +66,11 @@ func maxFloat64(nums []float64) float64 {
 	return max
 }
 
-func max[T int | float64](nums []T) T {
+type Number interface {
+	int | float64
+}
+
+func max[T Number](nums []T) T {
 	if len(nums) == 0 {
 		return 0
 	}
