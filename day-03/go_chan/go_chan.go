@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 )
 
 func main() {
@@ -51,14 +52,59 @@ func main() {
 	msg, ok := <-ch // ch is closed, msg is zero value
 	fmt.Printf("closed channel: %#v (ok=%v)\n", msg, ok)
 
-	/* Channel semantids:
-	- send & receive are blocking operations
-	- send & receive are atomic operations
-	- receive from closed channel is zero value without blocking
-	- send to closed channel panics
-	- closing a closed channel will panic
-	- send/receive to a nil channel blocks forever
-	*/
-
 	// ch <- "hello" // panic: send to closed channel
+
+	values := []int{15, 8, 42, 16, 4, 23, 1}
+	fmt.Println(sleepSort(values))
+}
+
+/*
+For every value "n" in values, spin a goroutine that will
+- slee "n" milliseconds
+- send "n" to the channel
+
+In the function bory, collect the values from the channel to a slice and return it
+* this is not a really sort algorithm, but it's a good example for channels
+*/
+func sleepSort(values []int) []int {
+	ch := make(chan int)
+	for _, n := range values {
+		n := n
+		go func() {
+			time.Sleep(time.Duration(n) * time.Millisecond)
+			ch <- n
+		}()
+	}
+
+	var out []int
+	// for i := 0; i < len(values); i++ {
+	for range values {
+		n := <-ch
+		out = append(out, n)
+	}
+	return out
+}
+
+/*
+	Channel semantids:
+
+- send & receive are blocking operations
+- send & receive are atomic operations
+- receive from closed channel is zero value without blocking
+- send to closed channel panics
+- closing a closed channel will panic
+- send/receive to a nil channel blocks forever
+
+See also https://www.353solutions.com/channel-semantics
+
+Amdahl's law: https://en.wikipedia.org/wiki/Amdahl%27s_law
+*/
+func shadowExample() {
+	n := 7
+	{
+		n := 2 // from here to } this is "n"
+		// n = 2 // outer n
+		fmt.Println("inner", n)
+	}
+	fmt.Println("outer", n)
 }
