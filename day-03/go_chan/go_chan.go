@@ -90,6 +90,7 @@ func sleepSort(values []int) []int {
 
 - send & receive are blocking operations
 - send & receive are atomic operations
+- buffered channels are non-blocking  send & receive
 - receive from closed channel is zero value without blocking
 - send to closed channel panics
 - closing a closed channel will panic
